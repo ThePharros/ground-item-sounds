@@ -46,7 +46,7 @@ public interface GroundItemSoundsConfig extends Config
 	@ConfigItem(
 		keyName = "lowValueSound",
 		name = "Low Value Sound",
-		description = "Configure whether or not to play a sound when a low valued item appears",
+		description = "Configure whether or not to play a sound when a low-valued item appears",
 		position = 3
 	)
 	default boolean lowValueSound()
@@ -58,7 +58,7 @@ public interface GroundItemSoundsConfig extends Config
 	@ConfigItem(
 		keyName = "lowValueVolume",
 		name = "Low Value Volume",
-		description = "Sets the sound volume for low valued ground items",
+		description = "Sets the sound volume for low-valued ground items",
 		position = 4
 	)
 	default int lowValueVolume()
@@ -69,7 +69,7 @@ public interface GroundItemSoundsConfig extends Config
 	@ConfigItem(
 		keyName = "mediumValueSound",
 		name = "Medium Value Sound",
-		description = "Configure whether or not to play a sound when a medium valued item appears",
+		description = "Configure whether or not to play a sound when a medium-valued item appears",
 		position = 5
 	)
 	default boolean mediumValueSound()
@@ -81,7 +81,7 @@ public interface GroundItemSoundsConfig extends Config
 	@ConfigItem(
 		keyName = "mediumValueVolume",
 		name = "Medium Value Volume",
-		description = "Sets the sound volume for medium valued ground items",
+		description = "Sets the sound volume for medium-valued ground items",
 		position = 6
 	)
 	default int mediumValueVolume()
@@ -92,7 +92,7 @@ public interface GroundItemSoundsConfig extends Config
 	@ConfigItem(
 		keyName = "highValueSound",
 		name = "High Value Sound",
-		description = "Configure whether or not to play a sound when a high valued item appears",
+		description = "Configure whether or not to play a sound when a high-valued item appears",
 		position = 7
 	)
 	default boolean highValueSound()
@@ -104,7 +104,7 @@ public interface GroundItemSoundsConfig extends Config
 	@ConfigItem(
 		keyName = "highValueVolume",
 		name = "High Value Volume",
-		description = "Sets the sound volume for high valued ground items",
+		description = "Sets the sound volume for high-valued ground items",
 		position = 8
 	)
 	default int highValueVolume()
@@ -115,7 +115,7 @@ public interface GroundItemSoundsConfig extends Config
 	@ConfigItem(
 		keyName = "insaneValueSound",
 		name = "Insane Value Sound",
-		description = "Configure whether or not to play a sound when an insane valued item appears",
+		description = "Configure whether or not to play a sound when an insane-valued item appears",
 		position = 9
 	)
 	default boolean insaneValueSound()
@@ -127,7 +127,7 @@ public interface GroundItemSoundsConfig extends Config
 	@ConfigItem(
 		keyName = "insaneValueVolume",
 		name = "Insane Value Volume",
-		description = "Sets the sound volume for insane valued ground items",
+		description = "Sets the sound volume for insane-valued ground items",
 		position = 10
 	)
 	default int insaneValueVolume()
