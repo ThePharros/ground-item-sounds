@@ -32,6 +32,7 @@ import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.plugins.grounditems.GroundItemsConfig;
 import net.runelite.client.plugins.grounditems.GroundItemsPlugin;
 import net.runelite.client.util.Text;
+import net.runelite.client.util.WildcardMatcher;
 
 @Slf4j
 @PluginDescriptor(
@@ -103,7 +104,7 @@ public class GroundItemSoundsPlugin extends Plugin
 		final ItemComposition itemComposition = itemManager.getItemComposition(id);
 		final String name = itemComposition.getName().toLowerCase();
 
-		if (config.highlightSound() && highlightedItemsList.contains(name))
+		if (config.highlightSound() && highlightedItemsList.stream().anyMatch(a -> WildcardMatcher.matches(a, name)))
 		{
 			playSound(HIGHLIGHTED_SOUND_FILE, config.highlightVolume());
 		}
