@@ -9,12 +9,13 @@ import java.io.OutputStream;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import javax.inject.Inject;
-import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Clip;
-import javax.sound.sampled.DataLine;
-import javax.sound.sampled.FloatControl;
+/**
+ import javax.sound.sampled.AudioFormat;
+ import javax.sound.sampled.AudioInputStream;
+ import javax.sound.sampled.Clip;
+ import javax.sound.sampled.DataLine;
+ import javax.sound.sampled.FloatControl;
+ **/
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +23,7 @@ import net.runelite.api.ItemComposition;
 import net.runelite.api.TileItem;
 import net.runelite.api.events.ItemSpawned;
 import net.runelite.client.RuneLite;
+import net.runelite.client.audio.AudioPlayer;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.ConfigChanged;
@@ -56,6 +58,7 @@ public class GroundItemSoundsPlugin extends Plugin
 	@Inject
 	private ItemManager itemManager;
 
+	private final AudioPlayer audioPlayer = new AudioPlayer();
 	private static final File GROUND_ITEM_SOUNDS_DIR = new File(RuneLite.RUNELITE_DIR.getPath() + File.separator + "ground-item-sounds");
 	private static final File HIGHLIGHTED_SOUND_FILE = new File(GROUND_ITEM_SOUNDS_DIR, "highlighted_sound.wav");
 	private static final File LOW_SOUND_FILE = new File(GROUND_ITEM_SOUNDS_DIR, "low_sound.wav");
@@ -70,7 +73,7 @@ public class GroundItemSoundsPlugin extends Plugin
 		INSANE_SOUND_FILE
 	};
 	private List<String> highlightedItemsList = new CopyOnWriteArrayList<>();
-	private Clip clip = null;
+	//private Clip clip = null;
 
 	@Override
 	protected void startUp()
@@ -82,8 +85,8 @@ public class GroundItemSoundsPlugin extends Plugin
 	@Override
 	protected void shutDown()
 	{
-		clip.close();
-		clip = null;
+		//clip.close();
+		//clip = null;
 		highlightedItemsList = null;
 	}
 
@@ -132,17 +135,11 @@ public class GroundItemSoundsPlugin extends Plugin
 		}
 	}
 
+	/**
 	private void playSound(File f, int volume)
 	{
 		try
 		{
-			/* Leaving this removed for now. Calling this too many times causes client to hang.
-			if (clip != null)
-			{
-				clip.close();
-			}
-			 */
-
 			AudioInputStream is = AudioSystem.getAudioInputStream(f);
 			AudioFormat format = is.getFormat();
 			DataLine.Info info = new DataLine.Info(Clip.class, format);
@@ -156,7 +153,21 @@ public class GroundItemSoundsPlugin extends Plugin
 			log.warn("Sound file error", e);
 		}
 	}
+	**/
 
+	private void playSound(File f, int volume)
+	{
+		try
+		{
+			audioPlayer.play(f, linearTodB(volume));
+		}
+		catch (LineUnavailableException | UnsupportedAudioFileException | IOException e)
+		{
+			log.warn("Sound file error", e);
+		}
+	}
+
+	/**
 	// sets volume using dB to linear conversion
 	private void setVolume(int volume)
 	{
@@ -164,6 +175,15 @@ public class GroundItemSoundsPlugin extends Plugin
 		vol *= config.masterVolume()/100.0f;
 		FloatControl gainControl = (FloatControl)clip.getControl(FloatControl.Type.MASTER_GAIN);
 		gainControl.setValue(20.0f * (float) Math.log10(vol));
+	}
+	 **/
+
+	// converts linear power ratio to dB (e.g. 50% -> -3.01dB)
+	private float linearTodB(int volume)
+	{
+		float vol = volume/100.0f;
+		vol *= config.masterVolume()/100.0f;
+		return 20.0f * (float) Math.log10(vol);
 	}
 
 	// initialize sound files if they haven't been created yet
