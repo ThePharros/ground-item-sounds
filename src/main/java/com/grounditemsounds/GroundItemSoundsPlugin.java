@@ -19,9 +19,14 @@ import javax.inject.Inject;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import lombok.extern.slf4j.Slf4j;
+import net.runelite.api.Client;
 import net.runelite.api.ItemComposition;
 import net.runelite.api.TileItem;
+import static net.runelite.api.TileItem.OWNERSHIP_GROUP;
+import static net.runelite.api.TileItem.OWNERSHIP_OTHER;
+import static net.runelite.api.TileItem.OWNERSHIP_SELF;
 import net.runelite.api.events.ItemSpawned;
+import net.runelite.api.gameval.VarbitID;
 import net.runelite.client.RuneLite;
 import net.runelite.client.audio.AudioPlayer;
 import net.runelite.client.config.ConfigManager;
@@ -33,6 +38,7 @@ import net.runelite.client.plugins.PluginDependency;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.plugins.grounditems.GroundItemsConfig;
 import net.runelite.client.plugins.grounditems.GroundItemsPlugin;
+import net.runelite.client.plugins.grounditems.config.OwnershipFilterMode;
 import net.runelite.client.util.Text;
 import net.runelite.client.util.WildcardMatcher;
 
@@ -43,6 +49,9 @@ import net.runelite.client.util.WildcardMatcher;
 @PluginDependency(GroundItemsPlugin.class)
 public class GroundItemSoundsPlugin extends Plugin
 {
+	@Inject
+	private Client client;
+
 	@Inject
 	private GroundItemSoundsConfig config;
 
@@ -107,9 +116,15 @@ public class GroundItemSoundsPlugin extends Plugin
 		final ItemComposition itemComposition = itemManager.getItemComposition(id);
 		final String name = itemComposition.getName().toLowerCase();
 
+		if (config.useOwnershipFilter() && !shouldPlaySound(groundItemsConfig.ownershipFilterMode(), item.getOwnership(), client.getVarbitValue(VarbitID.IRONMAN)))
+		{
+			return;
+		}
+
 		if (config.highlightSound() && highlightedItemsList.stream().anyMatch(a -> WildcardMatcher.matches(a, name)))
 		{
 			playSound(HIGHLIGHTED_SOUND_FILE, config.highlightVolume());
+			return;
 		}
 
 		final int quantity = item.getQuantity();
@@ -164,6 +179,19 @@ public class GroundItemSoundsPlugin extends Plugin
 		catch (LineUnavailableException | UnsupportedAudioFileException | IOException e)
 		{
 			log.warn("Sound file error", e);
+		}
+	}
+
+	private boolean shouldPlaySound(OwnershipFilterMode filterMode, int ownership, int accountType)
+	{
+		switch (filterMode)
+		{
+			case DROPS:
+				return ownership == OWNERSHIP_SELF || ownership == OWNERSHIP_GROUP;
+			case TAKEABLE:
+				return ownership != OWNERSHIP_OTHER || accountType == 0; // Mains can always take items
+			default:
+				return true;
 		}
 	}
 

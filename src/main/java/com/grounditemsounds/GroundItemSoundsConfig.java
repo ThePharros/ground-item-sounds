@@ -134,4 +134,15 @@ public interface GroundItemSoundsConfig extends Config
 	{
 		return 100;
 	}
+
+	@ConfigItem(
+			keyName = "useOwnershipFilter",
+			name = "Use ownership filter",
+			description = "Enables sounds to be based on the Ground Items plugin's ownership filter setting",
+			position = 11
+	)
+	default boolean useOwnershipFilter()
+	{
+		return true;
+	}
 }
