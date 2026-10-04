@@ -128,9 +128,9 @@ public class GroundItemSoundsPlugin extends Plugin
 		}
 
 		final int quantity = item.getQuantity();
-		final int gePrice = itemManager.getItemPrice(id) * quantity;
-		final int haPrice = itemComposition.getHaPrice() * quantity;
-		final int value = getValueByMode(gePrice, haPrice);
+		final long gePrice = itemManager.getItemPrice(id) * quantity;
+		final long haPrice = (long) itemComposition.getHaPrice() * quantity;
+		final long value = getValueByMode(gePrice, haPrice);
 
 		if (config.lowValueSound() && value >= groundItemsConfig.lowValuePrice() && value < groundItemsConfig.mediumValuePrice())
 		{
@@ -244,7 +244,7 @@ public class GroundItemSoundsPlugin extends Plugin
 		}
 	}
 
-	private int getValueByMode(int gePrice, int haPrice)
+	private long getValueByMode(long gePrice, long haPrice)
 	{
 		switch (groundItemsConfig.valueCalculationMode())
 		{
