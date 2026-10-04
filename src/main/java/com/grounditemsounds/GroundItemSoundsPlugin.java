@@ -32,7 +32,7 @@ import net.runelite.client.util.Text;
 @Slf4j
 @PluginDescriptor(
 	name = "Ground Item Sounds",
-	description = "Plays sounds when ground items appear, using your Ground Items highlight list and value tiers. Ground Items doesn't need to be enabled.",
+	description = "Plays sounds for ground items based on your Ground Items settings.",
 	internalName = "ground-item-sounds",
 	legacyDataDirectory = "ground-item-sounds"
 )
