@@ -33,6 +33,7 @@ import net.runelite.client.util.WildcardMatcher;
 @Slf4j
 @PluginDescriptor(
 	name = "Ground Item Sounds",
+	description = "Plays sounds when ground items appear, using your Ground Items highlight list and value tiers. Ground Items doesn't need to be enabled.",
 	internalName = "ground-item-sounds",
 	legacyDataDirectory = "ground-item-sounds"
 )
@@ -50,13 +51,9 @@ public class GroundItemSoundsPlugin extends Plugin
 		return configManager.getConfig(GroundItemSoundsConfig.class);
 	}
 
-	@Provides
-	GroundItemsConfig provideGroundItemsConfig(ConfigManager configManager)
-	{
-		return configManager.getConfig(GroundItemsConfig.class);
-	}
-
 	@Inject
+	private ConfigManager configManager;
+
 	private GroundItemsConfig groundItemsConfig;
 
 	@Inject
@@ -81,6 +78,7 @@ public class GroundItemSoundsPlugin extends Plugin
 	@Override
 	protected void startUp() throws IOException
 	{
+		groundItemsConfig = configManager.getConfig(GroundItemsConfig.class);
 		soundsDirectory = getPluginDirectory();
 		initSoundFiles();
 		updateHighlightedItemsList();
