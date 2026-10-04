@@ -1,10 +1,10 @@
 package com.grounditemsounds;
 
 import com.google.inject.Provides;
+import com.grounditemsounds.vendor.ItemList;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
-import java.util.List;
 import javax.inject.Inject;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
@@ -28,7 +28,6 @@ import net.runelite.client.plugins.grounditems.GroundItemsConfig;
 import net.runelite.client.plugins.grounditems.config.OwnershipFilterMode;
 import net.runelite.client.util.Filepath;
 import net.runelite.client.util.Text;
-import net.runelite.client.util.WildcardMatcher;
 
 @Slf4j
 @PluginDescriptor(
@@ -73,7 +72,8 @@ public class GroundItemSoundsPlugin extends Plugin
 		INSANE_SOUND_FILE
 	};
 	private Filepath soundsDirectory;
-	private List<String> highlightedItemsList = Collections.emptyList();
+	private ItemList highlightedItems = new ItemList(Collections.emptyList());
+	private ItemList hiddenItems = new ItemList(Collections.emptyList());
 
 	@Override
 	protected void startUp() throws IOException
@@ -81,15 +81,16 @@ public class GroundItemSoundsPlugin extends Plugin
 		groundItemsConfig = configManager.getConfig(GroundItemsConfig.class);
 		soundsDirectory = getPluginDirectory();
 		initSoundFiles();
-		updateHighlightedItemsList();
+		updateItemLists();
 	}
 
 	@Subscribe
 	public void onConfigChanged(ConfigChanged configChanged)
 	{
-		if (configChanged.getGroup().equals("grounditems") && configChanged.getKey().equals("highlightedItems"))
+		if (configChanged.getGroup().equals(GroundItemsConfig.GROUP)
+			&& (configChanged.getKey().equals("highlightedItems") || configChanged.getKey().equals("hiddenItems")))
 		{
-			updateHighlightedItemsList();
+			updateItemLists();
 		}
 	}
 
@@ -99,20 +100,26 @@ public class GroundItemSoundsPlugin extends Plugin
 		final TileItem item = itemSpawned.getItem();
 		final int id = item.getId();
 		final ItemComposition itemComposition = itemManager.getItemComposition(id);
-		final String name = itemComposition.getName().toLowerCase();
+		final String name = itemComposition.getName();
+		final int quantity = item.getQuantity();
 
 		if (config.useOwnershipFilter() && !shouldPlaySound(groundItemsConfig.ownershipFilterMode(), item.getOwnership(), client.getVarbitValue(VarbitID.IRONMAN)))
 		{
 			return;
 		}
 
-		if (config.highlightSound() && highlightedItemsList.stream().anyMatch(a -> WildcardMatcher.matches(a, name)))
+		final int hiddenOrHighlighted = isHiddenOrHighlighted(name, quantity);
+		if (hiddenOrHighlighted == HIGHLIGHTED && config.highlightSound())
 		{
 			playSound(HIGHLIGHTED_SOUND_FILE, config.highlightVolume());
 			return;
 		}
 
-		final int quantity = item.getQuantity();
+		if (hiddenOrHighlighted == HIDDEN)
+		{
+			return;
+		}
+
 		final long gePrice = itemManager.getItemPrice(id) * quantity;
 		final long haPrice = (long) itemComposition.getHaPrice() * quantity;
 		final long value = getValueByMode(gePrice, haPrice);
@@ -204,8 +211,39 @@ public class GroundItemSoundsPlugin extends Plugin
 		}
 	}
 
-	private void updateHighlightedItemsList()
+	private void updateItemLists()
 	{
-		highlightedItemsList = Text.fromCSV(groundItemsConfig.getHighlightItems().toLowerCase());
+		highlightedItems = new ItemList(Text.fromCSV(groundItemsConfig.getHighlightItems()));
+		hiddenItems = new ItemList(Text.fromCSV(groundItemsConfig.getHiddenItems()));
+	}
+
+	private static final int NONE = 0;
+	private static final int HIGHLIGHTED = 1;
+	private static final int HIDDEN = 2;
+
+	private int isHiddenOrHighlighted(String name, int quantity)
+	{
+		int hl = highlightedItems.matches(name, quantity);
+		if (hl == ItemList.EXACT)
+		{
+			return HIGHLIGHTED;
+		}
+
+		int hi = hiddenItems.matches(name, quantity);
+		if (hi == ItemList.EXACT)
+		{
+			return HIDDEN;
+		}
+
+		if (hl == ItemList.WILDCARD)
+		{
+			return HIGHLIGHTED;
+		}
+		if (hi == ItemList.WILDCARD)
+		{
+			return HIDDEN;
+		}
+
+		return NONE;
 	}
 }
