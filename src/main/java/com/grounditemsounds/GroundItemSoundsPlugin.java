@@ -1,6 +1,7 @@
 package com.grounditemsounds;
 
 import com.google.inject.Provides;
+import com.grounditemsounds.vendor.ItemList;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;

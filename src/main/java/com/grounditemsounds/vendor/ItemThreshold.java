@@ -22,7 +22,38 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.grounditemsounds;
+/*
+ * ============================================================================
+ * VENDORED FROM RUNELITE - KEEP IN SYNC WITH UPSTREAM, DO NOT HAND-EDIT LOGIC.
+ * ----------------------------------------------------------------------------
+ * Source file in the RuneLite repo:
+ *     runelite-client/src/main/java/net/runelite/client/plugins/grounditems/ItemThreshold.java
+ *     (https://github.com/runelite/runelite)
+ *
+ * Copied at RuneLite commit:
+ *     repo checkout : fc20e195e26f0ed799291d271af5be3d41c5dbaa
+ *                     (tag runelite-parent-1.13.0)
+ *     file version  : a38b363af96de247855295cc84d8e3d75e9a98f4
+ *                     ("ground items: prioritize exact matches over wildcard matches")
+ * The file-version commit is the authoritative content marker - diff against
+ * upstream ItemThreshold.java at that SHA to see exactly what we changed.
+ * To re-sync: check out a newer RuneLite, re-copy the file, bump the two SHAs
+ * above, and re-apply the deviations described below.
+ *
+ * Why vendored: Ground Item Sounds follows the Ground Items highlight and
+ * hidden lists, and should match them exactly the way Ground Items does,
+ * including quantity thresholds ("coins > 1000") and exact-over-wildcard
+ * priority. Upstream's class is package-private to
+ * net.runelite.client.plugins.grounditems, so we cannot import it - hence
+ * this copy.
+ *
+ * Deviations from upstream (intentional, keep minimal for easy re-sync):
+ *   - Package moved to com.grounditemsounds.vendor.
+ *   - No other changes; it stays package-private and is only used by the
+ *     vendored ItemList.
+ * ============================================================================
+ */
+package com.grounditemsounds.vendor;
 
 import com.google.common.base.Strings;
 import lombok.Value;
