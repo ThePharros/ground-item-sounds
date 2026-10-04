@@ -23,10 +23,8 @@ import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.ConfigChanged;
 import net.runelite.client.game.ItemManager;
 import net.runelite.client.plugins.Plugin;
-import net.runelite.client.plugins.PluginDependency;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.plugins.grounditems.GroundItemsConfig;
-import net.runelite.client.plugins.grounditems.GroundItemsPlugin;
 import net.runelite.client.plugins.grounditems.config.OwnershipFilterMode;
 import net.runelite.client.util.Filepath;
 import net.runelite.client.util.Text;
@@ -38,7 +36,6 @@ import net.runelite.client.util.WildcardMatcher;
 	internalName = "ground-item-sounds",
 	legacyDataDirectory = "ground-item-sounds"
 )
-@PluginDependency(GroundItemsPlugin.class)
 public class GroundItemSoundsPlugin extends Plugin
 {
 	@Inject
@@ -51,6 +48,12 @@ public class GroundItemSoundsPlugin extends Plugin
 	GroundItemSoundsConfig provideConfig(ConfigManager configManager)
 	{
 		return configManager.getConfig(GroundItemSoundsConfig.class);
+	}
+
+	@Provides
+	GroundItemsConfig provideGroundItemsConfig(ConfigManager configManager)
+	{
+		return configManager.getConfig(GroundItemsConfig.class);
 	}
 
 	@Inject
