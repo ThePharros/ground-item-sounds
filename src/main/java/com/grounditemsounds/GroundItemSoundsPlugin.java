@@ -1,21 +1,11 @@
 package com.grounditemsounds;
 
 import com.google.inject.Provides;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
+import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 import javax.inject.Inject;
-/**
- import javax.sound.sampled.AudioFormat;
- import javax.sound.sampled.AudioInputStream;
- import javax.sound.sampled.Clip;
- import javax.sound.sampled.DataLine;
- import javax.sound.sampled.FloatControl;
- **/
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +17,6 @@ import static net.runelite.api.TileItem.OWNERSHIP_OTHER;
 import static net.runelite.api.TileItem.OWNERSHIP_SELF;
 import net.runelite.api.events.ItemSpawned;
 import net.runelite.api.gameval.VarbitID;
-import net.runelite.client.RuneLite;
 import net.runelite.client.audio.AudioPlayer;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
@@ -39,12 +28,15 @@ import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.plugins.grounditems.GroundItemsConfig;
 import net.runelite.client.plugins.grounditems.GroundItemsPlugin;
 import net.runelite.client.plugins.grounditems.config.OwnershipFilterMode;
+import net.runelite.client.util.Filepath;
 import net.runelite.client.util.Text;
 import net.runelite.client.util.WildcardMatcher;
 
 @Slf4j
 @PluginDescriptor(
-	name = "Ground Item Sounds"
+	name = "Ground Item Sounds",
+	internalName = "ground-item-sounds",
+	legacyDataDirectory = "ground-item-sounds"
 )
 @PluginDependency(GroundItemsPlugin.class)
 public class GroundItemSoundsPlugin extends Plugin
@@ -68,35 +60,27 @@ public class GroundItemSoundsPlugin extends Plugin
 	private ItemManager itemManager;
 
 	private final AudioPlayer audioPlayer = new AudioPlayer();
-	private static final File GROUND_ITEM_SOUNDS_DIR = new File(RuneLite.RUNELITE_DIR.getPath() + File.separator + "ground-item-sounds");
-	private static final File HIGHLIGHTED_SOUND_FILE = new File(GROUND_ITEM_SOUNDS_DIR, "highlighted_sound.wav");
-	private static final File LOW_SOUND_FILE = new File(GROUND_ITEM_SOUNDS_DIR, "low_sound.wav");
-	private static final File MEDIUM_SOUND_FILE = new File(GROUND_ITEM_SOUNDS_DIR, "medium_sound.wav");
-	private static final File HIGH_SOUND_FILE = new File(GROUND_ITEM_SOUNDS_DIR, "high_sound.wav");
-	private static final File INSANE_SOUND_FILE = new File(GROUND_ITEM_SOUNDS_DIR, "insane_sound.wav");
-	private static final File[] SOUND_FILES = new File[]{
+	private static final String HIGHLIGHTED_SOUND_FILE = "highlighted_sound.wav";
+	private static final String LOW_SOUND_FILE = "low_sound.wav";
+	private static final String MEDIUM_SOUND_FILE = "medium_sound.wav";
+	private static final String HIGH_SOUND_FILE = "high_sound.wav";
+	private static final String INSANE_SOUND_FILE = "insane_sound.wav";
+	private static final String[] SOUND_FILES = new String[]{
 		HIGHLIGHTED_SOUND_FILE,
 		LOW_SOUND_FILE,
 		MEDIUM_SOUND_FILE,
 		HIGH_SOUND_FILE,
 		INSANE_SOUND_FILE
 	};
-	private List<String> highlightedItemsList = new CopyOnWriteArrayList<>();
-	//private Clip clip = null;
+	private Filepath soundsDirectory;
+	private List<String> highlightedItemsList = Collections.emptyList();
 
 	@Override
-	protected void startUp()
+	protected void startUp() throws IOException
 	{
+		soundsDirectory = getPluginDirectory();
 		initSoundFiles();
 		updateHighlightedItemsList();
-	}
-
-	@Override
-	protected void shutDown()
-	{
-		//clip.close();
-		//clip = null;
-		highlightedItemsList = null;
 	}
 
 	@Subscribe
@@ -150,31 +134,11 @@ public class GroundItemSoundsPlugin extends Plugin
 		}
 	}
 
-	/**
-	private void playSound(File f, int volume)
+	private void playSound(String fileName, int volume)
 	{
 		try
 		{
-			AudioInputStream is = AudioSystem.getAudioInputStream(f);
-			AudioFormat format = is.getFormat();
-			DataLine.Info info = new DataLine.Info(Clip.class, format);
-			clip = (Clip) AudioSystem.getLine(info);
-			clip.open(is);
-			setVolume(volume);
-			clip.start();
-		}
-		catch (LineUnavailableException | UnsupportedAudioFileException | IOException e)
-		{
-			log.warn("Sound file error", e);
-		}
-	}
-	**/
-
-	private void playSound(File f, int volume)
-	{
-		try
-		{
-			audioPlayer.play(f, linearTodB(volume));
+			audioPlayer.play(soundsDirectory.joinSegment(fileName), linearTodB(volume));
 		}
 		catch (LineUnavailableException | UnsupportedAudioFileException | IOException e)
 		{
@@ -195,17 +159,6 @@ public class GroundItemSoundsPlugin extends Plugin
 		}
 	}
 
-	/**
-	// sets volume using dB to linear conversion
-	private void setVolume(int volume)
-	{
-		float vol = volume/100.0f;
-		vol *= config.masterVolume()/100.0f;
-		FloatControl gainControl = (FloatControl)clip.getControl(FloatControl.Type.MASTER_GAIN);
-		gainControl.setValue(20.0f * (float) Math.log10(vol));
-	}
-	 **/
-
 	// converts linear power ratio to dB (e.g. 50% -> -3.01dB)
 	private float linearTodB(int volume)
 	{
@@ -214,32 +167,25 @@ public class GroundItemSoundsPlugin extends Plugin
 		return 20.0f * (float) Math.log10(vol);
 	}
 
-	// initialize sound files if they haven't been created yet
-	private void initSoundFiles()
+	private void initSoundFiles() throws IOException
 	{
-		if (!GROUND_ITEM_SOUNDS_DIR.exists())
-		{
-			GROUND_ITEM_SOUNDS_DIR.mkdirs();
-		}
+		soundsDirectory.createDirectories();
 
-		for (File f : SOUND_FILES)
+		for (String fileName : SOUND_FILES)
 		{
-			try
+			Filepath soundFile = soundsDirectory.joinSegment(fileName);
+			if (soundFile.exists())
 			{
-				if (f.exists()) {
-					continue;
-				}
-				InputStream stream = GroundItemSoundsPlugin.class.getClassLoader().getResourceAsStream(f.getName());
-				OutputStream out = new FileOutputStream(f);
-				byte[] buffer = new byte[8 * 1024];
-				int bytesRead;
-				while ((bytesRead = stream.read(buffer)) != -1) {
-					out.write(buffer, 0, bytesRead);
-				}
-				out.close();
-				stream.close();
-			}  catch (Exception e) {
-				log.debug("GroundItemSoundsPlugin - " + e + ": " + f);
+				continue;
+			}
+
+			try (InputStream defaultSound = GroundItemSoundsPlugin.class.getResourceAsStream("/" + fileName))
+			{
+				soundFile.write(defaultSound.readAllBytes());
+			}
+			catch (IOException e)
+			{
+				log.warn("Unable to create default sound file {}", soundFile, e);
 			}
 		}
 	}
@@ -259,9 +205,6 @@ public class GroundItemSoundsPlugin extends Plugin
 
 	private void updateHighlightedItemsList()
 	{
-		if (!groundItemsConfig.getHighlightItems().isEmpty())
-		{
-			highlightedItemsList = Text.fromCSV(groundItemsConfig.getHighlightItems().toLowerCase());
-		}
+		highlightedItemsList = Text.fromCSV(groundItemsConfig.getHighlightItems().toLowerCase());
 	}
 }

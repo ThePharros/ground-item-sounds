@@ -5,6 +5,6 @@ Tiers are determined by the highlighted and value settings found in the `Ground 
 ## Customization
 To use your own sounds for each tier, replace the corresponding .wav file found in:
 
-`User/.runelite/ground-item-sounds`
+`User/.runelite/plugin-data/ground-item-sounds`
 
 with a **.wav file** of the **same name**.
